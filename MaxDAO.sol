@@ -571,16 +571,16 @@ contract MaxDAO is Ownable {
             0,
             0,
             240e18,
-            80000e18,
-            80000e18,
+            150000e18,
+            150000e18,
             true
         ); // LP - MDC
         _miningPools["mdclp_90"] = MiningPool(
             0,
             0,
             240e18,
-            120000e18,
-            120000e18,
+            150000e18,
+            150000e18,
             true
         ); // LP - MDC
         _miningPools["mdclp_360"] = MiningPool(
@@ -595,16 +595,16 @@ contract MaxDAO is Ownable {
             0,
             0,
             960e18,
-            600000e18,
-            600000e18,
+            150000e18,
+            150000e18,
             false
         ); // LP
         _miningPools["mdclp"] = MiningPool(
             0,
             0,
             960e18,
-            600000e18,
-            600000e18,
+            500000e18,
+            500000e18,
             false
         ); // LP
     }

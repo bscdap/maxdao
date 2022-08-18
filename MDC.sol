@@ -525,7 +525,7 @@ contract MDC is IBEP20, Ownable {
         _balances[address(this)] = _totalSupply;
         emit Transfer(address(0), address(this), _totalSupply);
 
-        _transferFree(address(this), _liquidity, 120000e18);
+        _transferFree(address(this), _liquidity, 120000);
     }
 
     /**
