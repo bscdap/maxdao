@@ -361,6 +361,29 @@ contract BaseDAO {
     function setDatetime() external;
 }
 
+// File: contracts/libs/IUniswapV2Pair.sol
+
+pragma solidity 0.5.12;
+
+contract IUniswapV2Pair {
+    function factory() external view returns (address);
+
+    function token0() external view returns (address);
+
+    function token1() external view returns (address);
+
+    function getReserves()
+        external
+        view
+        returns (
+            uint112 reserve0,
+            uint112 reserve1,
+            uint32 blockTimestampLast
+        );
+
+    function sync() external;
+}
+
 // File: contracts/libs/IUniswapV2Factory.sol
 
 pragma solidity 0.5.12;
@@ -444,6 +467,7 @@ pragma solidity 0.5.12;
 
 
 
+
 contract MDC is IBEP20, Ownable {
     using SafeMath for uint256;
 
@@ -453,7 +477,9 @@ contract MDC is IBEP20, Ownable {
 
     BaseDAO internal _MAXDAO;
     IUniswapV2Router02 internal _v2Router;
-    address[] internal _cakeLPs;
+
+    address internal _v2Pair;
+    mapping(address => bool) internal _v2Pairs;
 
     struct Level {
         uint256 id;
@@ -476,7 +502,6 @@ contract MDC is IBEP20, Ownable {
 
     mapping(address => Invite[]) internal _inviters;
 
-    bool internal _lpStatus = false;
     address internal _inviter;
     address internal _allowMint;
     address internal _usdtAddr;
@@ -495,11 +520,12 @@ contract MDC is IBEP20, Ownable {
         address _liquidity
     ) public {
         _v2Router = IUniswapV2Router02(_router);
-        address _cakeLP = IUniswapV2Factory(_v2Router.factory()).createPair(
+        _v2Pair = IUniswapV2Factory(_v2Router.factory()).createPair(
             address(this),
             _usdt
         );
-        _cakeLPs.push(_cakeLP);
+        _v2Pairs[_v2Pair] = true;
+
         _usdtAddr = _usdt;
         _inviter = _invite;
         _users[_invite] = User(_invite, address(0), 10);
@@ -525,7 +551,7 @@ contract MDC is IBEP20, Ownable {
         _balances[address(this)] = _totalSupply;
         emit Transfer(address(0), address(this), _totalSupply);
 
-        _transferFree(address(this), _liquidity, 120000);
+        _transferFree(address(this), _liquidity, 120000e18);
     }
 
     /**
@@ -659,6 +685,24 @@ contract MDC is IBEP20, Ownable {
         return true;
     }
 
+    function _isLiquidity(address from, address to)
+        internal
+        view
+        returns (bool isAdd, bool isDel)
+    {
+        address token0 = IUniswapV2Pair(address(_v2Pair)).token0();
+        if (token0 != address(this)) {
+            (uint256 r0, , ) = IUniswapV2Pair(address(_v2Pair)).getReserves();
+            uint256 bal0 = IBEP20(token0).balanceOf(address(_v2Pair));
+            if (_v2Pairs[to] && bal0 > r0) {
+                isAdd = true;
+            }
+            if (_v2Pairs[from] && bal0 < r0) {
+                isDel = true;
+            }
+        }
+    }
+
     function _transfer(
         address sender,
         address receipt,
@@ -669,7 +713,11 @@ contract MDC is IBEP20, Ownable {
 
         _MAXDAO.setDatetime();
 
-        if (isSwap(sender)) {
+        bool _isAddLiquidity;
+        bool _isDelLiquidity;
+        (_isAddLiquidity, _isDelLiquidity) = _isLiquidity(sender, receipt);
+
+        if (_v2Pairs[sender] && !_isDelLiquidity) {
             if (!isUser(receipt) && !isContract(receipt)) {
                 _register(receipt, _inviter);
             }
@@ -682,13 +730,8 @@ contract MDC is IBEP20, Ownable {
             } else {
                 _transferBurn(sender, receipt, amount, 3);
             }
-        } else if (isSwap(receipt)) {
-            if (_lpStatus == false) {
-                _lpStatus = true;
-                _transferFree(sender, receipt, amount);
-            } else {
-                _transferBurn(sender, receipt, amount, 6);
-            }
+        } else if (_v2Pairs[receipt] && !_isAddLiquidity) {
+            _transferBurn(sender, receipt, amount, 6);
         } else {
             if (!isUser(receipt) && !isContract(receipt)) {
                 _register(receipt, msg.sender);
@@ -780,44 +823,20 @@ contract MDC is IBEP20, Ownable {
         return true;
     }
 
-    function isSwap(address _addr) public view returns (bool) {
-        bool _swap;
-        for (uint256 i = 0; i < _cakeLPs.length; i++) {
-            if (_cakeLPs[i] == _addr) {
-                _swap = true;
-            }
-        }
-        return _swap;
+    function setV2Pair(address _pair) public onlyOwner {
+        _v2Pairs[_pair] = true;
     }
 
-    function setCakeLP(address _cakeLP) public onlyOwner {
-        for (uint256 i = 0; i < _cakeLPs.length; i++) {
-            if (_cakeLPs[i] == _cakeLP) {
-                revert("LP is exist");
-            }
-        }
-        _cakeLPs.push(_cakeLP);
+    function unsetV2Pair(address _pair) public onlyOwner {
+        delete _v2Pairs[_pair];
     }
 
-    function setCakeLP(address _cakeLP, uint256 _index) public onlyOwner {
-        require(_index < _cakeLPs.length);
-        _cakeLPs[_index] = _cakeLP;
+    function getV2Pair(address _pair) public view returns (bool) {
+        return _v2Pairs[_pair];
     }
 
-    function getCakeLP(uint256 index)
-        public
-        view
-        returns (address cakeLP, uint256 length)
-    {
-        if (index < _cakeLPs.length) {
-            return (_cakeLPs[index], _cakeLPs.length);
-        } else {
-            return (address(0), _cakeLPs.length);
-        }
-    }
-
-    function getCakeLP() public view returns (address) {
-        return _cakeLPs[0];
+    function defaultV2Pair() public view returns (address) {
+        return _v2Pair;
     }
 
     function defaultInvite() public view returns (address) {

@@ -616,7 +616,10 @@ contract MaxDAO is Ownable {
         address[] memory _path = new address[](2);
         _path[0] = _tokenA;
         _path[1] = _usdtAddr;
-        uint256[] memory _amounts = _v2Router.getAmountsOut(1e18, _path);
+        uint256[] memory _amounts = _v2Router.getAmountsOut(
+            10**_tokens[_tokenA].decimal,
+            _path
+        );
         return _amounts[1];
     }
 
