@@ -538,33 +538,25 @@ contract MaxDAO is Ownable {
         _miningPools["alone"] = MiningPool(
             2000e18,
             0,
-            200e18,
-            30000e18,
-            30000e18,
-            true
+            100e18,
+            10000e18,
+            10000e18,
+            false
         );
         _miningPools["compose"] = MiningPool(
             0,
             0,
-            400e18,
-            200000e18,
-            200000e18,
-            false
-        );
-        _miningPools["safelp_30"] = MiningPool(
-            0,
-            0,
-            96e18,
-            60000e18,
-            60000e18,
+            250e18,
+            100000e18,
+            100000e18,
             true
-        ); // LP - SAFE
-        _miningPools["safelp_90"] = MiningPool(
+        );
+        _miningPools["safelp"] = MiningPool(
             0,
-            0,
-            144e18,
-            90000e18,
-            90000e18,
+            45,
+            100e18,
+            50000e18,
+            50000e18,
             true
         ); // LP - SAFE
         _miningPools["mdclp_30"] = MiningPool(
@@ -583,7 +575,7 @@ contract MaxDAO is Ownable {
             150000e18,
             true
         ); // LP - MDC
-        _miningPools["mdclp_360"] = MiningPool(
+        _miningPools["mdclp_180"] = MiningPool(
             0,
             0,
             320e18,
@@ -591,18 +583,10 @@ contract MaxDAO is Ownable {
             200000e18,
             true
         ); // LP - MDC
-        _miningPools["safelp"] = MiningPool(
-            0,
-            0,
-            960e18,
-            150000e18,
-            150000e18,
-            false
-        ); // LP
         _miningPools["mdclp"] = MiningPool(
             0,
             0,
-            960e18,
+            1000e18,
             500000e18,
             500000e18,
             false
@@ -709,27 +693,22 @@ contract MaxDAO is Ownable {
         _saveOrder(_token, _amount2, _pledge, _type);
     }
 
-    function depositSafeLP(uint256 _amount, uint256 _pledge) public {
+    function depositSafeLP(uint256 _amount) public {
         require(_MDC.isUser(msg.sender));
         require(_miningPools["safelp"].enable);
-        require(_pledge == 30 || _pledge == 90);
         require(
             IBEP20(_safeLP).transferFrom(msg.sender, address(this), _amount)
         );
-        string memory _type;
-        if (_pledge == 30) {
-            _type = "safelp_30";
-        } else {
-            _type = "safelp_90";
-        }
+        string memory _type = "safelp";
 
+        uint256 _pledge = _miningPools[_type].pledge;
         _saveOrder(_safeLP, _amount, _pledge, _type);
     }
 
     function depositMdcLP(uint256 _amount, uint256 _pledge) public {
         require(_MDC.isUser(msg.sender));
         require(_miningPools["mdclp"].enable);
-        require(_pledge == 30 || _pledge == 90 || _pledge == 360);
+        require(_pledge == 30 || _pledge == 90 || _pledge == 180);
         require(
             IBEP20(_mdcLP).transferFrom(msg.sender, address(this), _amount)
         );
@@ -739,7 +718,7 @@ contract MaxDAO is Ownable {
         } else if (_pledge == 90) {
             _type = "mdclp_90";
         } else {
-            _type = "mdclp_360";
+            _type = "mdclp_180";
         }
 
         _saveOrder(_mdcLP, _amount, _pledge, _type);
@@ -823,12 +802,10 @@ contract MaxDAO is Ownable {
             keccak256(abi.encodePacked(_type)) ==
             keccak256(abi.encodePacked("lp"))
         ) {
-            _value += _depositValue(_uid, "safelp_30");
-            _value += _depositValue(_uid, "safelp_90");
-            _value += _depositValue(_uid, "safelp_360");
+            _value += _depositValue(_uid, "safelp");
             _value += _depositValue(_uid, "mdclp_30");
             _value += _depositValue(_uid, "mdclp_90");
-            _value += _depositValue(_uid, "mdclp_360");
+            _value += _depositValue(_uid, "mdclp_180");
         } else {
             _value = _depositValue(_uid, _type);
         }
@@ -837,8 +814,7 @@ contract MaxDAO is Ownable {
 
     function depositValueLPSafe(address _uid) public view returns (uint256) {
         uint256 _value;
-        _value += _depositValue(_uid, "safelp_30");
-        _value += _depositValue(_uid, "safelp_90");
+        _value += _depositValue(_uid, "safelp");
         return _value;
     }
 
@@ -846,7 +822,7 @@ contract MaxDAO is Ownable {
         uint256 _value;
         _value += _depositValue(_uid, "mdclp_30");
         _value += _depositValue(_uid, "mdclp_90");
-        _value += _depositValue(_uid, "mdclp_360");
+        _value += _depositValue(_uid, "mdclp_180");
         return _value;
     }
 
@@ -892,11 +868,10 @@ contract MaxDAO is Ownable {
             keccak256(abi.encodePacked(_type)) ==
             keccak256(abi.encodePacked("lp"))
         ) {
-            _value += _depositValueTotal("safelp_30");
-            _value += _depositValueTotal("safelp_90");
+            _value += _depositValueTotal("safelp");
             _value += _depositValueTotal("mdclp_30");
             _value += _depositValueTotal("mdclp_90");
-            _value += _depositValueTotal("mdclp_360");
+            _value += _depositValueTotal("mdclp_180");
         } else {
             _value = _depositValueTotal(_type);
         }
@@ -905,8 +880,7 @@ contract MaxDAO is Ownable {
 
     function depositValueTotalLPSafe() public view returns (uint256) {
         uint256 _value;
-        _value += _depositValueTotal("safelp_30");
-        _value += _depositValueTotal("safelp_90");
+        _value += _depositValueTotal("safelp");
         return _value;
     }
 
@@ -914,7 +888,7 @@ contract MaxDAO is Ownable {
         uint256 _value;
         _value += _depositValueTotal("mdclp_30");
         _value += _depositValueTotal("mdclp_90");
-        _value += _depositValueTotal("mdclp_360");
+        _value += _depositValueTotal("mdclp_180");
         return _value;
     }
 
@@ -996,15 +970,14 @@ contract MaxDAO is Ownable {
             keccak256(abi.encodePacked(_type)) ==
             keccak256(abi.encodePacked("safelp"))
         ) {
-            _mint(msg.sender, "safelp_30");
-            _mint(msg.sender, "safelp_90");
+            _mint(msg.sender, "safelp");
         } else if (
             keccak256(abi.encodePacked(_type)) ==
             keccak256(abi.encodePacked("mdclp"))
         ) {
             _mint(msg.sender, "mdclp_30");
             _mint(msg.sender, "mdclp_90");
-            _mint(msg.sender, "mdclp_360");
+            _mint(msg.sender, "mdclp_180");
         } else {
             _mint(msg.sender, _type);
         }
@@ -1101,12 +1074,11 @@ contract MaxDAO is Ownable {
         uint256 _compose = _mintAmount(_uid, "compose");
         uint256 _safelp;
         uint256 _mdclp;
-        _safelp += _mintAmount(_uid, "safelp_30");
-        _safelp += _mintAmount(_uid, "safelp_90");
+        _safelp += _mintAmount(_uid, "safelp");
 
         _mdclp += _mintAmount(_uid, "mdclp_30");
         _mdclp += _mintAmount(_uid, "mdclp_90");
-        _mdclp += _mintAmount(_uid, "mdclp_360");
+        _mdclp += _mintAmount(_uid, "mdclp_180");
         return (_alone, _compose, _safelp, _mdclp);
     }
 
@@ -1158,11 +1130,10 @@ contract MaxDAO is Ownable {
         uint256 _compose = _miningPools["compose"].surplus;
         uint256 _safelp;
         uint256 _mdclp;
-        _safelp += _miningPools["safelp_30"].surplus;
-        _safelp += _miningPools["safelp_90"].surplus;
+        _safelp += _miningPools["safelp"].surplus;
         _mdclp += _miningPools["mdclp_30"].surplus;
         _mdclp += _miningPools["mdclp_90"].surplus;
-        _mdclp += _miningPools["mdclp_360"].surplus;
+        _mdclp += _miningPools["mdclp_180"].surplus;
         return (_alone, _compose, _safelp, _mdclp);
     }
 
@@ -1213,11 +1184,10 @@ contract MaxDAO is Ownable {
         }
         _setMintPool("alone");
         _setMintPool("compose");
-        _setMintPool("safelp_30");
-        _setMintPool("safelp_90");
+        _setMintPool("safelp");
         _setMintPool("mdclp_30");
         _setMintPool("mdclp_90");
-        _setMintPool("mdclp_360");
+        _setMintPool("mdclp_180");
         return true;
     }
 

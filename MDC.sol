@@ -516,17 +516,22 @@ contract MDC is IBEP20, Ownable {
     constructor(
         address _router,
         address _invite,
-        address _usdt,
+        address _token,
         address _liquidity
     ) public {
+        require(address(0) != _router, "is zero address");
+        require(address(0) != _invite, "is zero address");
+        require(address(0) != _token, "is zero address");
+        require(address(0) != _liquidity, "is zero address");
+
         _v2Router = IUniswapV2Router02(_router);
         _v2Pair = IUniswapV2Factory(_v2Router.factory()).createPair(
             address(this),
-            _usdt
+            _token
         );
         _v2Pairs[_v2Pair] = true;
 
-        _usdtAddr = _usdt;
+        _usdtAddr = _token;
         _inviter = _invite;
         _users[_invite] = User(_invite, address(0), 10);
 
@@ -546,7 +551,7 @@ contract MDC is IBEP20, Ownable {
         _name = "MDC token";
         _symbol = "MDC";
         _decimals = 18;
-        _totalSupply = 1000000 * 10**uint256(_decimals);
+        _totalSupply = 780000 * 10**uint256(_decimals);
 
         _balances[address(this)] = _totalSupply;
         emit Transfer(address(0), address(this), _totalSupply);
@@ -591,7 +596,7 @@ contract MDC is IBEP20, Ownable {
         return _amounts[1];
     }
 
-    function isContract(address account) internal view returns (bool) {
+    function isContract(address account) public view returns (bool) {
         bytes32 codehash;
         bytes32 accountHash = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
         assembly {
@@ -604,16 +609,15 @@ contract MDC is IBEP20, Ownable {
         address token,
         address recipient,
         uint256 amount
-    ) public onlyOwner {
-        IBEP20(token).transfer(recipient, amount);
+    ) external onlyOwner returns (bool) {
+        return IBEP20(token).transfer(recipient, amount);
     }
 
     function transfer(address recipient, uint256 amount)
         external
         returns (bool)
     {
-        _transfer(msg.sender, recipient, amount);
-        return true;
+        return _transfer(msg.sender, recipient, amount);
     }
 
     function allowance(address owner, address spender)
@@ -659,7 +663,7 @@ contract MDC is IBEP20, Ownable {
     }
 
     function increaseAllowance(address spender, uint256 addedValue)
-        public
+        external
         returns (bool)
     {
         _approve(
@@ -671,7 +675,7 @@ contract MDC is IBEP20, Ownable {
     }
 
     function decreaseAllowance(address spender, uint256 subtractedValue)
-        public
+        external
         returns (bool)
     {
         _approve(
@@ -731,7 +735,7 @@ contract MDC is IBEP20, Ownable {
                 _transferBurn(sender, receipt, amount, 3);
             }
         } else if (_v2Pairs[receipt] && !_isAddLiquidity) {
-            _transferBurn(sender, receipt, amount, 6);
+            _transferBurn(sender, receipt, amount, 7);
         } else {
             if (!isUser(receipt) && !isContract(receipt)) {
                 _register(receipt, msg.sender);
@@ -767,7 +771,7 @@ contract MDC is IBEP20, Ownable {
         return true;
     }
 
-    function mint(address _uid, uint256 _tokens) public returns (bool) {
+    function mint(address _uid, uint256 _tokens) external returns (bool) {
         require(msg.sender == _allowMint || msg.sender == owner());
         return _mint(_uid, _tokens);
     }
@@ -823,27 +827,30 @@ contract MDC is IBEP20, Ownable {
         return true;
     }
 
-    function setV2Pair(address _pair) public onlyOwner {
+    function setV2Pair(address _pair) external onlyOwner {
+        require(_pair != address(0), "is zero address");
         _v2Pairs[_pair] = true;
     }
 
-    function unsetV2Pair(address _pair) public onlyOwner {
+    function unsetV2Pair(address _pair) external onlyOwner {
+        require(_pair != address(0), "is zero address");
         delete _v2Pairs[_pair];
     }
 
-    function getV2Pair(address _pair) public view returns (bool) {
+    function getV2Pair(address _pair) external view returns (bool) {
         return _v2Pairs[_pair];
     }
 
-    function defaultV2Pair() public view returns (address) {
+    function defaultV2Pair() external view returns (address) {
         return _v2Pair;
     }
 
-    function defaultInvite() public view returns (address) {
+    function defaultInvite() external view returns (address) {
         return _inviter;
     }
 
-    function register(address _pid) public {
+    function register(address _pid) external {
+        require(_pid != address(0), "is zero address");
         require(!isUser(msg.sender));
         _register(msg.sender, _pid);
     }
@@ -895,12 +902,12 @@ contract MDC is IBEP20, Ownable {
         return _users[_uid].uid != address(0);
     }
 
-    function getInviter(address _uid) public view returns (address) {
+    function getInviter(address _uid) external view returns (address) {
         return _users[_uid].pid;
     }
 
     function getUser(address _uid)
-        public
+        external
         view
         returns (
             address uid,
@@ -912,7 +919,7 @@ contract MDC is IBEP20, Ownable {
     }
 
     function getListInvite(address _uid, uint256 _key)
-        public
+        external
         view
         returns (
             uint256 key,
@@ -945,23 +952,26 @@ contract MDC is IBEP20, Ownable {
         );
     }
 
-    function setAllowMint(address _allow) public onlyOwner {
+    function setAllowMint(address _allow) external onlyOwner {
+        require(_allow != address(0), "is zero address");
         _allowMint = _allow;
     }
 
-    function setSwaptime(uint256 _time) public onlyOwner {
+    function setSwaptime(uint256 _time) external onlyOwner {
         _swapTime = _time;
     }
 
-    function getExcluded(address _uid) public view returns (bool) {
+    function getExcluded(address _uid) external view returns (bool) {
         return _isExcluded[_uid];
     }
 
-    function setExcluded(address _uid, bool _status) public onlyOwner {
+    function setExcluded(address _uid, bool _status) external onlyOwner {
+        require(_uid != address(0), "is zero address");
         _isExcluded[_uid] = _status;
     }
 
-    function setMaxDao(address _dao) public onlyOwner {
+    function setMaxDao(address _dao) external onlyOwner {
+        require(_dao != address(0), "is zero address");
         _MAXDAO = BaseDAO(_dao);
     }
 }
