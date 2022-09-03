@@ -562,7 +562,7 @@ contract MaxDAO is Ownable {
         _miningPools["mdclp_30"] = MiningPool(
             0,
             0,
-            240e18,
+            300e18,
             150000e18,
             150000e18,
             true
@@ -570,7 +570,7 @@ contract MaxDAO is Ownable {
         _miningPools["mdclp_90"] = MiningPool(
             0,
             0,
-            240e18,
+            300e18,
             150000e18,
             150000e18,
             true
@@ -578,7 +578,7 @@ contract MaxDAO is Ownable {
         _miningPools["mdclp_180"] = MiningPool(
             0,
             0,
-            320e18,
+            400e18,
             200000e18,
             200000e18,
             true
