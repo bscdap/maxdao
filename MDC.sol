@@ -91,7 +91,6 @@ interface IBEP20 {
 
 // File: contracts/libs/Context.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 /*
@@ -121,7 +120,6 @@ contract Context {
 
 // File: contracts/libs/Ownable.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 /**
@@ -197,7 +195,6 @@ contract Ownable is Context {
 
 // File: contracts/libs/SafeMath.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 /**
@@ -351,7 +348,6 @@ library SafeMath {
 
 // File: contracts/libs/BaseDAO.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract BaseDAO {
@@ -368,7 +364,6 @@ abstract contract BaseDAO {
 
 // File: contracts/libs/IUniswapV2Pair.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Pair {
@@ -393,7 +388,6 @@ abstract contract IUniswapV2Pair {
 
 // File: contracts/libs/IUniswapV2Factory.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Factory {
@@ -430,7 +424,6 @@ abstract contract IUniswapV2Factory {
 
 // File: contracts/libs/IUniswapV2Router01.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Router01 {
@@ -465,7 +458,6 @@ abstract contract IUniswapV2Router01 {
 
 // File: contracts/libs/IUniswapV2Router02.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Router02 is IUniswapV2Router01 {
@@ -474,13 +466,7 @@ abstract contract IUniswapV2Router02 is IUniswapV2Router01 {
 
 // File: contracts/MDC.sol
 
-// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
-
-
-
-
-
 
 
 contract MDC is IBEP20, Ownable {
