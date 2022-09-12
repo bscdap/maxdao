@@ -1,6 +1,7 @@
 // File: contracts/libs/IBEP20.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 interface IBEP20 {
   /**
@@ -90,7 +91,8 @@ interface IBEP20 {
 
 // File: contracts/libs/Context.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -119,7 +121,8 @@ contract Context {
 
 // File: contracts/libs/Ownable.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -194,26 +197,27 @@ contract Ownable is Context {
 
 // File: contracts/libs/BaseMDC.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract BaseMDC {
-    function totalSupply() external view returns (uint256);
+abstract contract BaseMDC {
+    function totalSupply() external virtual view returns (uint256);
 
-    function balanceOf(address account) external view returns (uint256);
+    function balanceOf(address account) external virtual view returns (uint256);
 
-    function mint(address _uid, uint256 _tokens) external returns (bool);
+    function mint(address _uid, uint256 _tokens) external virtual returns (bool);
 
-    function isUser(address _uid) external view returns (bool);
+    function isUser(address _uid) external virtual view returns (bool);
 
-    function getInviter(address _uid) external view returns (address);
+    function getInviter(address _uid) external virtual view returns (address);
 
-    function defaultInvite() external view returns (address);
+    function defaultInvite() external virtual view returns (address);
 }
 
 // File: contracts/libs/SafeMath.sol
 
-pragma solidity 0.5.12;
-
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -364,11 +368,82 @@ library SafeMath {
   }
 }
 
+// File: contracts/libs/ReentrancyGuard.sol
+
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
+
+/**
+ * @dev Contract module that helps prevent reentrant calls to a function.
+ *
+ * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
+ * available, which can be applied to functions to make sure there are no nested
+ * (reentrant) calls to them.
+ *
+ * Note that because there is a single `nonReentrant` guard, functions marked as
+ * `nonReentrant` may not call one another. This can be worked around by making
+ * those functions `private`, and then adding `external` `nonReentrant` entry
+ * points to them.
+ *
+ * TIP: If you would like to learn more about reentrancy and alternative ways
+ * to protect against it, check out our blog post
+ * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
+ */
+contract ReentrancyGuard {
+    // Booleans are more expensive than uint256 or any type that takes up a full
+    // word because each write operation emits an extra SLOAD to first read the
+    // slot's contents, replace the bits taken up by the boolean, and then write
+    // back. This is the compiler's defense against contract upgrades and
+    // pointer aliasing, and it cannot be disabled.
+
+    // The values being non-zero value makes deployment a bit more expensive,
+    // but in exchange the refund on every call to nonReentrant will be lower in
+    // amount. Since refunds are capped to a percentage of the total
+    // transaction's gas, it is best to keep them low in cases like this one, to
+    // increase the likelihood of the full refund coming into effect.
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+
+    uint256 private _status;
+
+    constructor() internal {
+        _status = _NOT_ENTERED;
+    }
+
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * Calling a `nonReentrant` function from another `nonReentrant`
+     * function is not supported. It is possible to prevent this from happening
+     * by making the `nonReentrant` function external, and making it call a
+     * `private` function that does the actual work.
+     */
+    modifier nonReentrant() {
+        _nonReentrantBefore();
+        _;
+        _nonReentrantAfter();
+    }
+
+    function _nonReentrantBefore() private {
+        // On the first call to nonReentrant, _notEntered will be true
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+
+        // Any calls to nonReentrant after this point will fail
+        _status = _ENTERED;
+    }
+
+    function _nonReentrantAfter() private {
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = _NOT_ENTERED;
+    }
+}
+
 // File: contracts/libs/IUniswapV2Factory.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract IUniswapV2Factory {
+abstract contract IUniswapV2Factory {
   event PairCreated(
     address indexed token0,
     address indexed token1,
@@ -376,71 +451,78 @@ contract IUniswapV2Factory {
     uint256
   );
 
-  function feeTo() external view returns (address);
+  function feeTo() external virtual view returns (address);
 
-  function feeToSetter() external view returns (address);
+  function feeToSetter() external virtual view returns (address);
 
   function getPair(address _tokenA, address _tokenB)
     external
+    virtual
     view
     returns (address pair);
 
-  function allPairs(uint256) external view returns (address pair);
+  function allPairs(uint256) external virtual view returns (address pair);
 
-  function allPairsLength() external view returns (uint256);
+  function allPairsLength() external virtual view returns (uint256);
 
   function createPair(address _tokenA, address _tokenB)
     external
+    virtual
     returns (address pair);
 
-  function setFeeTo(address) external;
+  function setFeeTo(address) external virtual;
 
-  function setFeeToSetter(address) external;
+  function setFeeToSetter(address) external virtual;
 }
 
 // File: contracts/libs/IUniswapV2Router01.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract IUniswapV2Router01 {
-  function factory() external pure returns (address);
+abstract contract IUniswapV2Router01 {
+  function factory() external virtual pure returns (address);
 
-  function WETH() external pure returns (address);
+  function WETH() external virtual pure returns (address);
 
   function getAmountOut(
     uint256 amountIn,
     uint256 reserveIn,
     uint256 reserveOut
-  ) external pure returns (uint256 amountOut);
+  ) external virtual pure returns (uint256 amountOut);
 
   function getAmountIn(
     uint256 amountOut,
     uint256 reserveIn,
     uint256 reserveOut
-  ) external pure returns (uint256 amountIn);
+  ) external virtual pure returns (uint256 amountIn);
 
   function getAmountsOut(uint256 amountIn, address[] calldata path)
     external
+    virtual
     view
     returns (uint256[] memory amounts);
 
   function getAmountsIn(uint256 amountOut, address[] calldata path)
     external
+    virtual
     view
     returns (uint256[] memory amounts);
 }
 
 // File: contracts/libs/IUniswapV2Router02.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract IUniswapV2Router02 is IUniswapV2Router01 {
+abstract contract IUniswapV2Router02 is IUniswapV2Router01 {
   
 }
 
 // File: contracts/MaxDAO.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 
 
@@ -448,7 +530,7 @@ pragma solidity 0.5.12;
 
 
 
-contract MaxDAO is Ownable {
+contract MaxDAO is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
 
     struct Index {
@@ -509,15 +591,16 @@ contract MaxDAO is Ownable {
 
     uint256 internal _timeEnable;
     uint256 internal _timedate;
+    uint256 internal _mintTime;
 
     uint256 internal _rateSafe = 30;
 
     IUniswapV2Router02 internal _v2Router;
     BaseMDC internal _MDC;
 
-    address internal _usdtAddr;
-    address internal _safeAddr;
-    address internal _mdcAddr;
+    address internal immutable _usdtAddr;
+    address internal immutable _safeAddr;
+    address internal immutable _mdcAddr;
     address internal _safeLP;
     address internal _mdcLP;
 
@@ -528,7 +611,7 @@ contract MaxDAO is Ownable {
         address _usdt,
         uint256 _time
     ) public {
-        _v2Router = IUniswapV2Router02(_router);
+        // _v2Router = IUniswapV2Router02(_router);
         _usdtAddr = _usdt;
         _safeAddr = _safe;
         _mdcAddr = _mdc;
@@ -635,21 +718,38 @@ contract MaxDAO is Ownable {
         IBEP20(token).transfer(recipient, amount);
     }
 
-    function depositAlone(address _token, uint256 _amount) public {
-        require(_MDC.isUser(msg.sender));
-        require(_miningPools["alone"].enable);
-        require(_tokens[_token].token != address(0));
-        require(_tokens[_token].token != _safeLP);
-        require(_tokens[_token].token != _mdcLP);
+    function _depositToken(address _token, uint256 _amount)
+        internal
+        returns (uint256)
+    {
+        address _uid = _msgSender();
+        uint256 _oldBalance = IBEP20(_token).balanceOf(_uid);
+
         require(
-            IBEP20(_token).transferFrom(msg.sender, address(this), _amount)
+            IBEP20(_token).transferFrom(msg.sender, address(this), _amount),
+            "transfer failed"
         );
+        uint256 _newBalance = IBEP20(_token).balanceOf(_uid);
+
+        return _oldBalance.sub(_newBalance);
+    }
+
+    function depositAlone(address _token, uint256 _amount) public {
+        require(_MDC.isUser(msg.sender), "unregistered");
+        require(_miningPools["alone"].enable, "mining pool is not enabled");
+        require(_tokens[_token].token != address(0), "tokens are not legal");
+        require(_tokens[_token].token != _safeLP, "cannot be an LP token");
+        require(_tokens[_token].token != _mdcLP, "cannot be an LP token");
+
+        _amount = _depositToken(_token, _amount);
+
         string memory _type = "alone";
         if (_miningPools[_type].limit > 0) {
             uint256 depositValue = _depositValue(msg.sender, _type);
             uint256 currentValue = _amount.mul(tokenPrice(_token)).div(1e18);
             require(
-                depositValue.add(currentValue) <= _miningPools[_type].limit
+                depositValue.add(currentValue) <= _miningPools[_type].limit,
+                "exceed the limit amount"
             );
         }
         uint256 _pledge = _miningPools[_type].pledge;
@@ -661,17 +761,14 @@ contract MaxDAO is Ownable {
         uint256 _amount1,
         uint256 _amount2
     ) public {
-        require(_MDC.isUser(msg.sender));
-        require(_miningPools["compose"].enable);
-        require(_tokens[_token].token != address(0));
-        require(_tokens[_token].token != _safeLP);
-        require(_tokens[_token].token != _mdcLP);
-        require(
-            IBEP20(_safeAddr).transferFrom(msg.sender, address(this), _amount1)
-        );
-        require(
-            IBEP20(_token).transferFrom(msg.sender, address(this), _amount2)
-        );
+        require(_MDC.isUser(msg.sender), "unregistered");
+        require(_miningPools["compose"].enable, "mining pool is not enabled");
+        require(_tokens[_token].token != address(0), "tokens are not legal");
+        require(_tokens[_token].token != _safeLP, "cannot be an LP token");
+        require(_tokens[_token].token != _mdcLP, "cannot be an LP token");
+
+        _amount1 = _depositToken(_safeAddr, _amount1);
+        _amount2 = _depositToken(_token, _amount2);
 
         Token memory _token1 = _tokens[_safeAddr];
         Token memory _token2 = _tokens[_token];
@@ -683,8 +780,14 @@ contract MaxDAO is Ownable {
             10**_token2.decimal
         );
 
-        require(_value1.mul(100).div(_value1.add(_value2)) <= _rateSafe.add(1));
-        require(_value1.mul(100).div(_value1.add(_value2)) >= _rateSafe.sub(1));
+        require(
+            _value1.mul(100).div(_value1.add(_value2)) <= _rateSafe.add(1),
+            "scale error"
+        );
+        require(
+            _value1.mul(100).div(_value1.add(_value2)) >= _rateSafe.sub(1),
+            "scale error"
+        );
 
         string memory _type = "compose";
         uint256 _pledge = _miningPools[_type].pledge;
@@ -694,11 +797,11 @@ contract MaxDAO is Ownable {
     }
 
     function depositSafeLP(uint256 _amount) public {
-        require(_MDC.isUser(msg.sender));
-        require(_miningPools["safelp"].enable);
-        require(
-            IBEP20(_safeLP).transferFrom(msg.sender, address(this), _amount)
-        );
+        require(_MDC.isUser(msg.sender), "unregistered");
+        require(_miningPools["safelp"].enable, "mining pool is not enabled");
+
+        _amount = _depositToken(_safeLP, _amount);
+
         string memory _type = "safelp";
 
         uint256 _pledge = _miningPools[_type].pledge;
@@ -706,12 +809,15 @@ contract MaxDAO is Ownable {
     }
 
     function depositMdcLP(uint256 _amount, uint256 _pledge) public {
-        require(_MDC.isUser(msg.sender));
-        require(_miningPools["mdclp"].enable);
-        require(_pledge == 30 || _pledge == 90 || _pledge == 180);
+        require(_MDC.isUser(msg.sender), "unregistered");
+        require(_miningPools["mdclp"].enable, "mining pool is not enabled");
         require(
-            IBEP20(_mdcLP).transferFrom(msg.sender, address(this), _amount)
+            _pledge == 30 || _pledge == 90 || _pledge == 180,
+            "incorrect pledge days"
         );
+
+        _amount = _depositToken(_mdcLP, _amount);
+
         string memory _type;
         if (_pledge == 30) {
             _type = "mdclp_30";
@@ -845,19 +951,6 @@ contract MaxDAO is Ownable {
         return _value;
     }
 
-    function _depositValueLP(address _uid, string memory _type)
-        internal
-        view
-        returns (uint256)
-    {
-        Deposit[] memory _deposit = _deposits[_type][_uid];
-        uint256 _value;
-        for (uint256 i = 0; i < _deposit.length; i++) {
-            _value = _value.add(_deposit[i].amount);
-        }
-        return _value;
-    }
-
     function depositValueTotal(string memory _type)
         public
         view
@@ -893,7 +986,7 @@ contract MaxDAO is Ownable {
     }
 
     function _depositValueTotal(string memory _type)
-        public
+        internal
         view
         returns (uint256)
     {
@@ -912,7 +1005,7 @@ contract MaxDAO is Ownable {
     }
 
     function _depositValueTotalLP(string memory _type)
-        public
+        internal
         view
         returns (uint256)
     {
@@ -924,15 +1017,24 @@ contract MaxDAO is Ownable {
         return _value;
     }
 
-    function withdrawToken(uint256 _key) public {
+    function withdrawToken(uint256 _key) public nonReentrant {
         Order memory _order = _orders[msg.sender][_key];
-        require(!_order.isWithdraw);
-        require(_mintAmount(msg.sender, _order.types) == 0);
-        require(block.timestamp >= _order.time.add(_order.pledge.mul(86400)));
+        require(!_order.isWithdraw, "repeat withdrawal");
+        require(
+            _mintAmount(msg.sender, _order.types) == 0,
+            "need to settle first"
+        );
+        require(
+            block.timestamp >= _order.time.add(_order.pledge.mul(86400)),
+            "checkout time not yet"
+        );
 
         _mint(msg.sender, _order.types);
 
-        require(IBEP20(_order.token).transfer(msg.sender, _order.amount));
+        require(
+            IBEP20(_order.token).transfer(msg.sender, _order.amount),
+            "transfer failed"
+        );
         _setDeposit(_order.token, _order.amount, _order.types, false);
         _mintPool[_order.types].deposit -= _order.amount;
         _orders[msg.sender][_key].isWithdraw = true;
@@ -1009,7 +1111,13 @@ contract MaxDAO is Ownable {
         returns (uint256)
     {
         if (_timeLast[_type][_uid] == 0) return 0;
-        return _timedate.sub(_timeLast[_type][_uid]).div(12 hours);
+        uint256 _time = _timeLast[_type][_uid];
+        if (_time < _mintTime) {
+            _time = _mintTime;
+        }
+        if (_time > _timedate) return 0;
+
+        return _timedate.sub(_time).div(12 hours);
     }
 
     function getProfit(address _uid) public view returns (uint256) {
@@ -1197,11 +1305,13 @@ contract MaxDAO is Ownable {
         }
 
         if (_mintPool[_type].deposit > 0 && _mintPool[_type].time < _timedate) {
-            uint256 _amount = _timedate
-                .sub(_mintPool[_type].time)
-                .div(12 hours)
-                .mul(_miningPools[_type].output.div(2));
-            _mintPool[_type].mintAmount += _amount;
+            if (_mintTime < _timedate) {
+                uint256 _amount = _timedate
+                    .sub(_mintPool[_type].time)
+                    .div(12 hours)
+                    .mul(_miningPools[_type].output.div(2));
+                _mintPool[_type].mintAmount += _amount;
+            }
             _mintPool[_type].time = _timedate;
         }
 
@@ -1215,9 +1325,14 @@ contract MaxDAO is Ownable {
         _setDatetime();
     }
 
-    function setDatetime(uint256 _time) public {
-        require(_time % 12 hours == 0);
+    function setDatetime(uint256 _time) public onlyOwner {
+        require(_time % 12 == 0, "timestamp must be a multiple of 12");
         _timedate = _time;
+    }
+
+    function setMintTime(uint256 _time) public onlyOwner {
+        require(_time % 12 == 0, "timestamp must be a multiple of 12");
+        _mintTime = _time;
     }
 
     function setSafeLP(address _lp) public onlyOwner {
@@ -1229,7 +1344,7 @@ contract MaxDAO is Ownable {
     }
 
     function setComposeRate(uint256 _rate) public onlyOwner {
-        require(_rate > 0 && _rate < 100);
+        require(_rate > 0 && _rate < 100, "scale out of bounds");
         _rateSafe = _rate;
     }
 

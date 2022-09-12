@@ -1,6 +1,7 @@
 // File: contracts/libs/IBEP20.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 interface IBEP20 {
   /**
@@ -90,7 +91,8 @@ interface IBEP20 {
 
 // File: contracts/libs/Context.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 /*
  * @dev Provides information about the current execution context, including the
@@ -119,7 +121,8 @@ contract Context {
 
 // File: contracts/libs/Ownable.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -194,8 +197,8 @@ contract Ownable is Context {
 
 // File: contracts/libs/SafeMath.sol
 
-pragma solidity 0.5.12;
-
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -348,32 +351,36 @@ library SafeMath {
 
 // File: contracts/libs/BaseDAO.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract BaseDAO {
-    function depositValue(address _uid) external view returns (uint256);
+abstract contract BaseDAO {
+    function depositValue(address _uid) external virtual view returns (uint256);
 
     function depositValue(address _uid, string calldata _type)
         external
+        virtual
         view
         returns (uint256);
 
-    function setDatetime() external;
+    function setDatetime() external virtual;
 }
 
 // File: contracts/libs/IUniswapV2Pair.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract IUniswapV2Pair {
-    function factory() external view returns (address);
+abstract contract IUniswapV2Pair {
+    function factory() external virtual view returns (address);
 
-    function token0() external view returns (address);
+    function token0() external virtual view returns (address);
 
-    function token1() external view returns (address);
+    function token1() external virtual view returns (address);
 
     function getReserves()
         external
+        virtual
         view
         returns (
             uint112 reserve0,
@@ -381,14 +388,15 @@ contract IUniswapV2Pair {
             uint32 blockTimestampLast
         );
 
-    function sync() external;
+    function sync() external virtual;
 }
 
 // File: contracts/libs/IUniswapV2Factory.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract IUniswapV2Factory {
+abstract contract IUniswapV2Factory {
   event PairCreated(
     address indexed token0,
     address indexed token1,
@@ -396,71 +404,78 @@ contract IUniswapV2Factory {
     uint256
   );
 
-  function feeTo() external view returns (address);
+  function feeTo() external virtual view returns (address);
 
-  function feeToSetter() external view returns (address);
+  function feeToSetter() external virtual view returns (address);
 
   function getPair(address _tokenA, address _tokenB)
     external
+    virtual
     view
     returns (address pair);
 
-  function allPairs(uint256) external view returns (address pair);
+  function allPairs(uint256) external virtual view returns (address pair);
 
-  function allPairsLength() external view returns (uint256);
+  function allPairsLength() external virtual view returns (uint256);
 
   function createPair(address _tokenA, address _tokenB)
     external
+    virtual
     returns (address pair);
 
-  function setFeeTo(address) external;
+  function setFeeTo(address) external virtual;
 
-  function setFeeToSetter(address) external;
+  function setFeeToSetter(address) external virtual;
 }
 
 // File: contracts/libs/IUniswapV2Router01.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract IUniswapV2Router01 {
-  function factory() external pure returns (address);
+abstract contract IUniswapV2Router01 {
+  function factory() external virtual pure returns (address);
 
-  function WETH() external pure returns (address);
+  function WETH() external virtual pure returns (address);
 
   function getAmountOut(
     uint256 amountIn,
     uint256 reserveIn,
     uint256 reserveOut
-  ) external pure returns (uint256 amountOut);
+  ) external virtual pure returns (uint256 amountOut);
 
   function getAmountIn(
     uint256 amountOut,
     uint256 reserveIn,
     uint256 reserveOut
-  ) external pure returns (uint256 amountIn);
+  ) external virtual pure returns (uint256 amountIn);
 
   function getAmountsOut(uint256 amountIn, address[] calldata path)
     external
+    virtual
     view
     returns (uint256[] memory amounts);
 
   function getAmountsIn(uint256 amountOut, address[] calldata path)
     external
+    virtual
     view
     returns (uint256[] memory amounts);
 }
 
 // File: contracts/libs/IUniswapV2Router02.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-contract IUniswapV2Router02 is IUniswapV2Router01 {
+abstract contract IUniswapV2Router02 is IUniswapV2Router01 {
   
 }
 
 // File: contracts/MDC.sol
 
-pragma solidity 0.5.12;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
 
 
@@ -502,11 +517,12 @@ contract MDC is IBEP20, Ownable {
 
     mapping(address => Invite[]) internal _inviters;
 
-    address internal _inviter;
+    address internal immutable _inviter;
+    address internal immutable _usdtAddr;
     address internal _allowMint;
-    address internal _usdtAddr;
 
     uint256 internal _swapTime;
+    uint256 private constant _MINNUM = 210000e18;
 
     uint256 public _totalSupply;
     uint8 public _decimals;
@@ -537,16 +553,16 @@ contract MDC is IBEP20, Ownable {
 
         _isExcluded[_invite] = true;
 
-        _levels[1] = Level(1, 100e18);
-        _levels[2] = Level(1, 200e18);
-        _levels[3] = Level(1, 300e18);
-        _levels[4] = Level(1, 400e18);
-        _levels[5] = Level(1, 500e18);
-        _levels[6] = Level(1, 600e18);
-        _levels[7] = Level(1, 700e18);
-        _levels[8] = Level(1, 800e18);
-        _levels[9] = Level(1, 900e18);
-        _levels[10] = Level(1, 1000e18);
+        _levels[1] = Level(1, 30e18);
+        _levels[2] = Level(2, 60e18);
+        _levels[3] = Level(3, 90e18);
+        _levels[4] = Level(4, 120e18);
+        _levels[5] = Level(5, 150e18);
+        _levels[6] = Level(6, 180e18);
+        _levels[7] = Level(7, 210e18);
+        _levels[8] = Level(8, 240e18);
+        _levels[9] = Level(9, 270e18);
+        _levels[10] = Level(10, 300e18);
 
         _name = "MDC token";
         _symbol = "MDC";
@@ -562,29 +578,29 @@ contract MDC is IBEP20, Ownable {
     /**
      * @dev Returns the token decimals.
      */
-    function decimals() external view returns (uint8) {
+    function decimals() external override view returns (uint8) {
         return _decimals;
     }
 
     /**
      * @dev Returns the token symbol.
      */
-    function symbol() external view returns (string memory) {
+    function symbol() external override view returns (string memory) {
         return _symbol;
     }
 
     /**
      * @dev Returns the token name.
      */
-    function name() external view returns (string memory) {
+    function name() external override view returns (string memory) {
         return _name;
     }
 
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() external override view returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address _uid) external view returns (uint256) {
+    function balanceOf(address _uid) external override view returns (uint256) {
         return _balances[_uid];
     }
 
@@ -615,6 +631,7 @@ contract MDC is IBEP20, Ownable {
 
     function transfer(address recipient, uint256 amount)
         external
+        override
         returns (bool)
     {
         return _transfer(msg.sender, recipient, amount);
@@ -622,13 +639,14 @@ contract MDC is IBEP20, Ownable {
 
     function allowance(address owner, address spender)
         external
+        override
         view
         returns (uint256)
     {
         return _allowances[owner][spender];
     }
 
-    function approve(address spender, uint256 amount) external returns (bool) {
+    function approve(address spender, uint256 amount) external override returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -649,7 +667,7 @@ contract MDC is IBEP20, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) external returns (bool) {
+    ) external override returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(
             sender,
@@ -772,7 +790,7 @@ contract MDC is IBEP20, Ownable {
     }
 
     function mint(address _uid, uint256 _tokens) external returns (bool) {
-        require(msg.sender == _allowMint || msg.sender == owner());
+        require(msg.sender == _allowMint || msg.sender == owner(), "permission denied");
         return _mint(_uid, _tokens);
     }
 
@@ -851,7 +869,7 @@ contract MDC is IBEP20, Ownable {
 
     function register(address _pid) external {
         require(_pid != address(0), "is zero address");
-        require(!isUser(msg.sender));
+        require(!isUser(msg.sender), "unregistered");
         _register(msg.sender, _pid);
     }
 
@@ -877,19 +895,20 @@ contract MDC is IBEP20, Ownable {
 
     function upgrade(uint256 _level) public {
         address _uid = msg.sender;
-        require(isUser(_uid));
-        require(_users[_uid].level < 10);
+        require(isUser(_uid), "unregistered");
+        require(_users[_uid].level < 10, "already max level");
+        require(_level <= 10, "max level is 10");
 
         uint256 _amount = upgradeAmount(_uid, _level);
-        require(_balances[_uid] >= _amount);
+        require(_balances[_uid] >= _amount, "Insufficient balance");
 
         _MAXDAO.setDatetime();
 
         _users[_uid].level = _level;
 
         uint256 _burnToken = _amount;
-        if (_totalSupply.sub(_burnToken) < 210000e18) {
-            _burnToken = _totalSupply.sub(210000e18);
+        if (_totalSupply.sub(_burnToken) < _MINNUM) {
+            _burnToken = _totalSupply.sub(_MINNUM);
         }
         _burn(_uid, _burnToken);
         if (_burnToken < _amount) {
