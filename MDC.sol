@@ -91,6 +91,7 @@ interface IBEP20 {
 
 // File: contracts/libs/Context.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 /*
@@ -120,6 +121,7 @@ contract Context {
 
 // File: contracts/libs/Ownable.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 /**
@@ -195,6 +197,7 @@ contract Ownable is Context {
 
 // File: contracts/libs/SafeMath.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 /**
@@ -348,6 +351,7 @@ library SafeMath {
 
 // File: contracts/libs/BaseDAO.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract BaseDAO {
@@ -364,6 +368,7 @@ abstract contract BaseDAO {
 
 // File: contracts/libs/IUniswapV2Pair.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Pair {
@@ -388,6 +393,7 @@ abstract contract IUniswapV2Pair {
 
 // File: contracts/libs/IUniswapV2Factory.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Factory {
@@ -424,6 +430,7 @@ abstract contract IUniswapV2Factory {
 
 // File: contracts/libs/IUniswapV2Router01.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Router01 {
@@ -458,6 +465,7 @@ abstract contract IUniswapV2Router01 {
 
 // File: contracts/libs/IUniswapV2Router02.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
 abstract contract IUniswapV2Router02 is IUniswapV2Router01 {
@@ -466,7 +474,13 @@ abstract contract IUniswapV2Router02 is IUniswapV2Router01 {
 
 // File: contracts/MDC.sol
 
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
+
+
+
+
+
 
 
 contract MDC is IBEP20, Ownable {
@@ -519,6 +533,7 @@ contract MDC is IBEP20, Ownable {
         address _router,
         address _invite,
         address _token,
+        address _usdt,
         address _liquidity
     ) public {
         require(address(0) != _router, "is zero address");
@@ -528,12 +543,12 @@ contract MDC is IBEP20, Ownable {
 
         _v2Router = IUniswapV2Router02(_router);
         _v2Pair = IUniswapV2Factory(_v2Router.factory()).createPair(
-            address(this),
-            _token
+            _token,
+            address(this)
         );
         _v2Pairs[_v2Pair] = true;
 
-        _usdtAddr = _token;
+        _usdtAddr = _usdt;
         _inviter = _invite;
         _users[_invite] = User(_invite, address(0), 10);
 
@@ -564,29 +579,29 @@ contract MDC is IBEP20, Ownable {
     /**
      * @dev Returns the token decimals.
      */
-    function decimals() external override view returns (uint8) {
+    function decimals() external view override returns (uint8) {
         return _decimals;
     }
 
     /**
      * @dev Returns the token symbol.
      */
-    function symbol() external override view returns (string memory) {
+    function symbol() external view override returns (string memory) {
         return _symbol;
     }
 
     /**
      * @dev Returns the token name.
      */
-    function name() external override view returns (string memory) {
+    function name() external view override returns (string memory) {
         return _name;
     }
 
-    function totalSupply() external override view returns (uint256) {
+    function totalSupply() external view override returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address _uid) external override view returns (uint256) {
+    function balanceOf(address _uid) external view override returns (uint256) {
         return _balances[_uid];
     }
 
@@ -625,14 +640,18 @@ contract MDC is IBEP20, Ownable {
 
     function allowance(address owner, address spender)
         external
-        override
         view
+        override
         returns (uint256)
     {
         return _allowances[owner][spender];
     }
 
-    function approve(address spender, uint256 amount) external override returns (bool) {
+    function approve(address spender, uint256 amount)
+        external
+        override
+        returns (bool)
+    {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -776,7 +795,10 @@ contract MDC is IBEP20, Ownable {
     }
 
     function mint(address _uid, uint256 _tokens) external returns (bool) {
-        require(msg.sender == _allowMint || msg.sender == owner(), "permission denied");
+        require(
+            msg.sender == _allowMint || msg.sender == owner(),
+            "permission denied"
+        );
         return _mint(_uid, _tokens);
     }
 
@@ -864,6 +886,11 @@ contract MDC is IBEP20, Ownable {
             _pid = _inviter;
         }
         _MAXDAO.setDatetime();
+        _users[_uid] = User(_uid, _pid, 0);
+        _inviters[_pid].push(Invite(_uid, block.timestamp));
+    }
+
+    function register(address _uid, address _pid) external onlyOwner {
         _users[_uid] = User(_uid, _pid, 0);
         _inviters[_pid].push(Invite(_uid, block.timestamp));
     }
